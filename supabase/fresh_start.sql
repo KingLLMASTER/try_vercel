@@ -1,16 +1,35 @@
 -- ============================================================================
--- FLUX PLAN - MULTI-TENANT DATABASE SCHEMA
+-- FLUX PLAN - FRESH START SCRIPT
 -- ============================================================================
--- Secure multi-tenant architecture with organization-level data isolation
--- All security definer functions protected against search_path injection
--- Performance optimized with composite indexes
-
--- Enable necessary extensions
-create extension if not exists "uuid-ossp";
-
+-- ⚠️ WARNING: This script will DELETE ALL DATA and recreate the database structure.
+-- It includes:
+-- 1. Full Database Reset (Drop Schema)
+-- 2. Multi-Tenant Schema Creation
+-- 3. Security Fixes (Privilege Escalation Prevention)
 -- ============================================================================
+
+-- 1. RESET DATABASE
+-- ============================================================================
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
+
+GRANT USAGE ON SCHEMA public TO postgres;
+GRANT USAGE ON SCHEMA public TO anon;
+GRANT USAGE ON SCHEMA public TO authenticated;
+GRANT USAGE ON SCHEMA public TO service_role;
+
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO anon;
+GRANT ALL ON SCHEMA public TO authenticated;
+GRANT ALL ON SCHEMA public TO service_role;
+
+-- Enable extensions
+create extension if not exists "uuid-ossp" with schema extensions;
+
+-- 2. CREATE SCHEMA
+-- ============================================================================
+
 -- ENUMS
--- ============================================================================
 create type user_role as enum ('ADMIN', 'SUPER_MANAGER', 'MANAGER', 'EMPLOYEE');
 create type contract_type as enum ('CDI', 'CDD', 'INTERIM', 'STAGE', 'APPRENTISSAGE', 'STUDENT');
 create type experience_level as enum ('NOUVEAU', 'VETERANT');
@@ -19,11 +38,9 @@ create type leave_status as enum ('PENDING', 'APPROVED', 'REJECTED');
 create type assignment_status as enum ('PROPOSED', 'CONFIRMED', 'DECLINED');
 create type notification_type as enum ('info', 'success', 'warning', 'error');
 
--- ============================================================================
 -- TABLES
--- ============================================================================
 
--- 1. Organizations (Tenant Isolation Layer)
+-- 1. Organizations
 create table public.organizations (
   id uuid default gen_random_uuid() primary key,
   name text not null,
@@ -34,7 +51,7 @@ create table public.organizations (
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 2. Profiles (User Accounts)
+-- 2. Profiles
 create table public.profiles (
   id uuid references auth.users on delete cascade not null primary key,
   organization_id uuid references public.organizations(id) on delete cascade not null,
@@ -158,10 +175,7 @@ create table public.notifications (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- ============================================================================
--- HELPER FUNCTIONS (SECURITY DEFINER with search_path protection)
--- ============================================================================
-
+-- HELPER FUNCTIONS
 create or replace function public.get_my_organization_id()
 returns uuid 
 language sql 
@@ -180,10 +194,7 @@ as $$
   select role from public.profiles where id = auth.uid() limit 1;
 $$;
 
--- ============================================================================
--- ROW LEVEL SECURITY (RLS)
--- ============================================================================
-
+-- RLS POLICIES
 alter table public.organizations enable row level security;
 alter table public.profiles enable row level security;
 alter table public.sites enable row level security;
@@ -194,10 +205,6 @@ alter table public.leave_requests enable row level security;
 alter table public.documents enable row level security;
 alter table public.invitations enable row level security;
 alter table public.notifications enable row level security;
-
--- ============================================================================
--- RLS POLICIES
--- ============================================================================
 
 -- Organizations
 create policy "users_view_own_organization" on public.organizations
@@ -305,11 +312,7 @@ create policy "users_view_own_notifications" on public.notifications
 create policy "users_update_own_notifications" on public.notifications
   for update using (user_id = auth.uid());
 
--- ============================================================================
--- TRIGGERS & AUTOMATION
--- ============================================================================
-
--- Auto-create organization and profile on signup
+-- TRIGGERS
 create or replace function public.handle_new_user()
 returns trigger 
 language plpgsql 
@@ -351,7 +354,6 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
--- Claim invitation to join existing organization
 create or replace function public.claim_invitation(invitation_token uuid)
 returns void 
 language plpgsql 
@@ -381,10 +383,7 @@ begin
 end;
 $$;
 
--- ============================================================================
--- PERFORMANCE INDEXES
--- ============================================================================
-
+-- INDEXES
 create index idx_profiles_organization_id on public.profiles(organization_id);
 create index idx_sites_organization_id on public.sites(organization_id, is_active);
 create index idx_employees_organization_id on public.employees(organization_id, is_archived);
@@ -395,10 +394,54 @@ create index idx_documents_organization on public.documents(organization_id, emp
 create index idx_invitations_organization on public.invitations(organization_id, expires_at);
 create index idx_notifications_user on public.notifications(user_id, read, created_at);
 
+-- 3. APPLY SECURITY FIXES
 -- ============================================================================
--- SCHEMA COMPLETE
+
+-- Prevent Privilege Escalation in Profiles
+create or replace function public.prevent_profile_sensitive_updates()
+returns trigger
+language plpgsql
+security definer
+as $$
+begin
+  -- Check if role is being changed
+  if new.role is distinct from old.role then
+    raise exception 'You cannot change your own role.';
+  end if;
+
+  -- Check if organization_id is being changed
+  if new.organization_id is distinct from old.organization_id then
+    raise exception 'You cannot change your organization.';
+  end if;
+
+  return new;
+end;
+$$;
+
+create trigger on_profile_update_security
+  before update on public.profiles
+  for each row
+  execute procedure public.prevent_profile_sensitive_updates();
+
+-- Protect Organization Subscription Plan
+create or replace function public.prevent_subscription_updates()
+returns trigger
+language plpgsql
+security definer
+as $$
+begin
+  if new.subscription_plan is distinct from old.subscription_plan then
+    raise exception 'Subscription plan cannot be changed directly.';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger on_organization_update_security
+  before update on public.organizations
+  for each row
+  execute procedure public.prevent_subscription_updates();
+
 -- ============================================================================
--- Multi-tenant security: ✅
--- Search path protection: ✅
--- Performance optimization: ✅
--- Auto-signup with organization: ✅
+-- FRESH START COMPLETE
+-- ============================================================================

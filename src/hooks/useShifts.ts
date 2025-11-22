@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { Database } from '@/integrations/supabase/types'
+import { sendNotification } from './useNotifications'
 
 type Shift = Database['public']['Tables']['shifts']['Row']
 type ShiftInsert = Database['public']['Tables']['shifts']['Insert']
@@ -15,8 +16,12 @@ type ShiftWithAssignments = Shift & {
       first_name: string
       last_name: string
       color: string | null
+      contract_type: string | null
     } | null
   }[]
+  site: {
+    name: string
+  } | null
 }
 
 export function useShifts(siteId?: string, startDate?: string, endDate?: string) {
@@ -36,8 +41,12 @@ export function useShifts(siteId?: string, startDate?: string, endDate?: string)
               id,
               first_name,
               last_name,
-              color
+              color,
+              contract_type
             )
+          ),
+          site:sites (
+            name
           )
         `)
       
@@ -58,7 +67,7 @@ export function useShifts(siteId?: string, startDate?: string, endDate?: string)
       if (error) throw error
       return data as unknown as ShiftWithAssignments[]
     },
-    enabled: !!siteId, // Only fetch if siteId is provided
+    enabled: !!siteId || siteId === undefined, // Fetch if siteId is provided or undefined (all sites)
   })
 
   const createShift = useMutation({
@@ -108,6 +117,43 @@ export function useShifts(siteId?: string, startDate?: string, endDate?: string)
     },
   })
 
+  const assignEmployee = useMutation({
+    mutationFn: async ({ shiftId, employeeId }: { shiftId: string, employeeId: string }) => {
+      // 1. Remove existing assignments
+      await supabase
+        .from('shift_assignments')
+        .delete()
+        .eq('shift_id', shiftId)
+
+      // 2. Create new assignment
+      const { data: userData } = await supabase.auth.getUser()
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('id', userData.user!.id)
+        .single()
+
+      if (!profileData?.organization_id) throw new Error("Organization ID not found")
+
+      const { data, error } = await supabase
+        .from('shift_assignments')
+        .insert({
+          shift_id: shiftId,
+          employee_id: employeeId,
+          status: 'CONFIRMED',
+          organization_id: profileData.organization_id
+        } as any)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shifts'] })
+    },
+  })
+
   return {
     shifts,
     isLoading,
@@ -115,6 +161,7 @@ export function useShifts(siteId?: string, startDate?: string, endDate?: string)
     createShift,
     updateShift,
     deleteShift,
+    assignEmployee
   }
 }
 
@@ -165,8 +212,6 @@ export const checkConflict = async (
   return conflicts;
 }
 
-import { sendNotification } from './useNotifications'
-
 export const assignEmployeesToShift = async (shiftId: string, employeeIds: string[]) => {
   // 1. Get existing assignments
   const { data: existingAssignments, error: fetchError } = await supabase
@@ -194,13 +239,23 @@ export const assignEmployeesToShift = async (shiftId: string, employeeIds: strin
   }
 
   if (toAdd.length > 0) {
+    const { data: userData } = await supabase.auth.getUser()
+    const { data: profileData } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('id', userData.user!.id)
+        .single()
+        
+    if (!profileData?.organization_id) throw new Error("Organization ID not found")
+
     const { error: insertError } = await supabase
       .from('shift_assignments')
       .insert(
         toAdd.map(employeeId => ({
           shift_id: shiftId,
           employee_id: employeeId,
-          status: 'PROPOSED'
+          status: 'PROPOSED',
+          organization_id: profileData.organization_id
         })) as any
       )
     

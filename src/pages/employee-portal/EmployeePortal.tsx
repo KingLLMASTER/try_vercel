@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
+import { useProfile } from '@/hooks/useProfile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,6 +13,7 @@ import { Loader2, Upload, Calendar as CalendarIcon } from 'lucide-react'
 
 export default function EmployeePortal() {
   const { user } = useAuth()
+  const { profile } = useProfile()
   const [isLoading, setIsLoading] = useState(false)
 
   // Leave Request State
@@ -45,7 +47,8 @@ export default function EmployeePortal() {
         end_date: endDate,
         type: leaveType as any,
         reason,
-        status: 'PENDING'
+        status: 'PENDING',
+        organization_id: profile!.organization_id
       })
 
       if (error) throw error
@@ -90,7 +93,8 @@ export default function EmployeePortal() {
         employee_id: employee.id,
         name: docName || file.name,
         file_path: filePath,
-        type: file.type
+        type: file.type,
+        organization_id: profile!.organization_id
       })
 
       if (dbError) throw dbError

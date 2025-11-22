@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useSites } from '@/hooks/useSites'
 import { useEmployees } from '@/hooks/useEmployees'
 import { useShifts, checkConflict, assignEmployeesToShift } from '@/hooks/useShifts'
+import { useProfile } from '@/hooks/useProfile'
 import { Database } from '@/integrations/supabase/types'
 import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -54,6 +55,7 @@ export function ShiftDialog({ open, onOpenChange, initialDate, initialSiteId, sh
   const { sites } = useSites()
   const { employees } = useEmployees()
   const { createShift, updateShift } = useShifts()
+  const { profile } = useProfile()
   const [error, setError] = useState<string | null>(null)
   const [openCombobox, setOpenCombobox] = useState(false)
 
@@ -128,6 +130,7 @@ export function ShiftDialog({ open, onOpenChange, initialDate, initialSiteId, sh
         start_time: data.start_time,
         end_time: data.end_time,
         max_employees: data.max_employees,
+        organization_id: profile!.organization_id,
         // @ts-ignore
         required_skills: []
       }

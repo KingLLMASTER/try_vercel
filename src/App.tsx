@@ -8,6 +8,7 @@ import SitesPage from '@/pages/sites/SitesPage'
 import EmployeesPage from '@/pages/employees/EmployeesPage'
 import PlanningPage from '@/pages/planning/PlanningPage'
 import DashboardPage from '@/pages/dashboard/DashboardPage'
+import OrgChartPage from '@/pages/orgchart/OrgChartPage'
 import { NotificationsPopover } from '@/components/notifications/NotificationsPopover'
 import { MobileNav } from '@/components/layout/MobileNav'
 import EmployeePortal from '@/pages/employee-portal/EmployeePortal'
@@ -61,6 +62,10 @@ function Dashboard() {
             <Calendar className="w-5 h-5" />
             <span className="hidden md:inline">Planning</span>
           </Link>
+          <Link to="/orgchart" className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded">
+            <Users className="w-5 h-5" />
+            <span className="hidden md:inline">Organigramme</span>
+          </Link>
           <Link to="/my-space" className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-blue-600">
             <User className="w-5 h-5" />
             <span className="hidden md:inline">Mon Espace</span>
@@ -90,6 +95,7 @@ function Dashboard() {
           <Route path="/sites" element={<SitesPage />} />
           <Route path="/employees" element={<EmployeesPage />} />
           <Route path="/planning" element={<PlanningPage />} />
+          <Route path="/orgchart" element={<OrgChartPage />} />
           <Route path="/my-space" element={<EmployeePortal />} />
         </Routes>
       </div>

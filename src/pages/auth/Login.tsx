@@ -32,6 +32,7 @@ export default function Login() {
   const [regConfirmPassword, setRegConfirmPassword] = useState('')
   const [regFirstName, setRegFirstName] = useState('')
   const [regLastName, setRegLastName] = useState('')
+  const [regCompanyName, setRegCompanyName] = useState('')
 
   // Forgot Password State
   const [resetEmail, setResetEmail] = useState('')
@@ -68,17 +69,22 @@ export default function Login() {
     }
     setIsLoading(true)
     try {
-      const { error } = await supabase.auth.signUp({
+      // 1. Sign Up
+      const { error: signUpError } = await supabase.auth.signUp({
         email: regEmail,
         password: regPassword,
         options: {
           data: {
             first_name: regFirstName,
             last_name: regLastName,
-          }
+            // We still pass company_name for metadata, but we'll handle org creation explicitly
+            company_name: regCompanyName,
+          },
+          emailRedirectTo: window.location.origin
         }
       })
-      if (error) throw error
+      if (signUpError) throw signUpError
+
       toast.success(t('code_sent'))
       setIsVerifying(true)
     } catch (error: any) {
@@ -92,28 +98,32 @@ export default function Login() {
     e.preventDefault()
     setIsLoading(true)
     try {
-      const { error } = await supabase.auth.verifyOtp({
+      // 1. Verify OTP
+      const { data: { session }, error: verifyError } = await supabase.auth.verifyOtp({
         email: regEmail,
         token: otpCode,
         type: 'signup'
       })
-      if (error) throw error
+      if (verifyError) throw verifyError
 
-      // Claim invitation if token exists
+      if (!session?.user) throw new Error("No session created")
+
+      // 2. Handle Organization Logic
       if (inviteToken) {
+        // Option A: Join existing org via invitation
         const { error: claimError } = await supabase.rpc('claim_invitation', {
           invitation_token: inviteToken
         })
         
         if (claimError) {
           console.error('Error claiming invitation:', claimError)
-          toast.error("Compte créé, mais l'invitation n'a pas pu être validée. Contactez l'administrateur.")
+          toast.error("Compte créé, mais l'invitation n'a pas pu être validée.")
         } else {
           toast.success("Invitation acceptée avec succès !")
         }
-      } else {
-        toast.success(t('welcome_back'))
       }
+      // Option B (Create new organization) is now handled automatically by the database trigger 'handle_new_user'
+      // based on the metadata passed during signUp.
       
       // Auth state change will redirect automatically
     } catch (error: any) {
@@ -301,6 +311,20 @@ export default function Login() {
                       required
                     />
                   </div>
+                </div>
+                <div className="space-y-2">
+                  {!inviteEmail && (
+                    <div className="space-y-2">
+                      <Label htmlFor="companyName">Nom de l'entreprise</Label>
+                      <Input
+                        id="companyName"
+                        value={regCompanyName}
+                        onChange={(e) => setRegCompanyName(e.target.value)}
+                        placeholder="Ma Société"
+                        required
+                      />
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="reg-email">{t('email')}</Label>

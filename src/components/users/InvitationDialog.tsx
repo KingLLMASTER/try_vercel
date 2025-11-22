@@ -5,10 +5,12 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { supabase } from '@/integrations/supabase/client'
+import { useProfile } from '@/hooks/useProfile'
 import { toast } from 'sonner'
 import { Loader2, Mail, Copy } from 'lucide-react'
 
 export default function InvitationDialog() {
+  const { profile } = useProfile()
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState('')
@@ -25,7 +27,8 @@ export default function InvitationDialog() {
         .from('invitations')
         .insert({
           email,
-          role: role as any
+          role: role as any,
+          organization_id: profile!.organization_id
         })
         .select()
         .single()

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useSites } from '@/hooks/useSites'
+import { useProfile } from '@/hooks/useProfile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -8,6 +9,7 @@ import { Plus, MapPin, Users, Clock } from 'lucide-react'
 
 export default function SitesPage() {
   const { sites, isLoading, createSite, deleteSite } = useSites()
+  const { profile } = useProfile()
   const [isCreating, setIsCreating] = useState(false)
   const [newSite, setNewSite] = useState({ name: '', code: '', address: '', capacity: 0 })
 
@@ -17,7 +19,8 @@ export default function SitesPage() {
       await createSite.mutateAsync({
         ...newSite,
         opening_hours: {}, // Default empty
-        is_active: true
+        is_active: true,
+        organization_id: profile!.organization_id
       })
       setIsCreating(false)
       setNewSite({ name: '', code: '', address: '', capacity: 0 })
