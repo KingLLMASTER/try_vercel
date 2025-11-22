@@ -22,7 +22,11 @@ const resources = {
       "email_sent": "Email sent! Check your inbox.",
       "error_generic": "An error occurred.",
       "passwords_match_error": "Passwords do not match",
-      "confirm_password": "Confirm Password"
+      "confirm_password": "Confirm Password",
+      "verify_email": "Verify Email",
+      "enter_code": "Enter the code sent to your email",
+      "verify": "Verify",
+      "code_sent": "Verification code sent!"
     }
   },
   fr: {
@@ -45,7 +49,11 @@ const resources = {
       "email_sent": "Email envoyé ! Vérifiez votre boîte de réception.",
       "error_generic": "Une erreur est survenue.",
       "passwords_match_error": "Les mots de passe ne correspondent pas",
-      "confirm_password": "Confirmer le mot de passe"
+      "confirm_password": "Confirmer le mot de passe",
+      "verify_email": "Vérifier l'email",
+      "enter_code": "Entrez le code envoyé à votre email",
+      "verify": "Vérifier",
+      "code_sent": "Code de vérification envoyé !"
     }
   }
 };

@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Mail, Phone, Briefcase } from 'lucide-react'
 
+import InvitationDialog from '@/components/users/InvitationDialog'
+
 export default function EmployeesPage() {
   const { employees, isLoading, createEmployee, deleteEmployee } = useEmployees()
   const { sites } = useSites()
@@ -43,9 +45,12 @@ export default function EmployeesPage() {
     <div className="p-8 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Employés</h1>
-        <Button onClick={() => setIsCreating(!isCreating)}>
-          <Plus className="mr-2 h-4 w-4" /> Nouvel Employé
-        </Button>
+        <div className="flex gap-2">
+          <InvitationDialog />
+          <Button onClick={() => setIsCreating(!isCreating)}>
+            <Plus className="mr-2 h-4 w-4" /> Nouvel Employé
+          </Button>
+        </div>
       </div>
 
       {isCreating && (

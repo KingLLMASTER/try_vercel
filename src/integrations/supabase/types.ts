@@ -6,251 +6,513 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
-      profiles: {
+      documents: {
         Row: {
-          id: string
-          first_name: string | null
-          last_name: string | null
-          email: string | null
-          role: 'ADMIN' | 'SUPER_MANAGER' | 'MANAGER' | 'EMPLOYEE'
-          avatar_url: string | null
           created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id: string
-          first_name?: string | null
-          last_name?: string | null
-          email?: string | null
-          role?: 'ADMIN' | 'SUPER_MANAGER' | 'MANAGER' | 'EMPLOYEE'
-          avatar_url?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          first_name?: string | null
-          last_name?: string | null
-          email?: string | null
-          role?: 'ADMIN' | 'SUPER_MANAGER' | 'MANAGER' | 'EMPLOYEE'
-          avatar_url?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      sites: {
-        Row: {
+          employee_id: string
+          file_path: string
           id: string
           name: string
-          code: string
-          address: string | null
-          capacity: number
-          opening_hours: Json | null
-          is_active: boolean
-          created_at: string
-          updated_at: string
+          type: string | null
         }
         Insert: {
+          created_at?: string
+          employee_id: string
+          file_path: string
           id?: string
           name: string
-          code: string
-          address?: string | null
-          capacity?: number
-          opening_hours?: Json | null
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
+          type?: string | null
         }
         Update: {
+          created_at?: string
+          employee_id?: string
+          file_path?: string
           id?: string
           name?: string
-          code?: string
-          address?: string | null
-          capacity?: number
-          opening_hours?: Json | null
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
+          type?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "documents_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       employees: {
         Row: {
-          id: string
-          profile_id: string | null
-          first_name: string
-          last_name: string
+          color: string | null
+          contract_type: Database["public"]["Enums"]["contract_type"] | null
+          created_at: string
           email: string | null
-          phone: string | null
           employee_number: string | null
-          contract_type: 'CDI' | 'CDD' | 'INTERIM' | 'STAGE' | 'APPRENTISSAGE' | 'STUDENT'
-          experience_level: 'NOUVEAU' | 'VETERANT'
-          hire_date: string | null
-          weekly_hours: number
-          hourly_rate: number | null
-          color: string | null
-          is_student: boolean
-          is_archived: boolean
-          site_id: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          profile_id?: string | null
+          experience_level: Database["public"]["Enums"]["experience_level"] | null
           first_name: string
+          hire_date: string | null
+          hourly_rate: number | null
+          id: string
+          is_archived: boolean | null
+          is_student: boolean | null
           last_name: string
-          email?: string | null
-          phone?: string | null
-          employee_number?: string | null
-          contract_type?: 'CDI' | 'CDD' | 'INTERIM' | 'STAGE' | 'APPRENTISSAGE' | 'STUDENT'
-          experience_level?: 'NOUVEAU' | 'VETERANT'
-          hire_date?: string | null
-          weekly_hours?: number
-          hourly_rate?: number | null
-          color?: string | null
-          is_student?: boolean
-          is_archived?: boolean
-          site_id?: string | null
-          created_at?: string
-          updated_at?: string
+          phone: string | null
+          profile_id: string | null
+          site_id: string | null
+          updated_at: string
+          weekly_hours: number | null
         }
-        Update: {
+        Insert: {
+          color?: string | null
+          contract_type?: Database["public"]["Enums"]["contract_type"] | null
+          created_at?: string
+          email?: string | null
+          employee_number?: string | null
+          experience_level?: Database["public"]["Enums"]["experience_level"] | null
+          first_name: string
+          hire_date?: string | null
+          hourly_rate?: number | null
           id?: string
+          is_archived?: boolean | null
+          is_student?: boolean | null
+          last_name: string
+          phone?: string | null
           profile_id?: string | null
-          first_name?: string
-          last_name?: string
-          email?: string | null
-          phone?: string | null
-          employee_number?: string | null
-          contract_type?: 'CDI' | 'CDD' | 'INTERIM' | 'STAGE' | 'APPRENTISSAGE' | 'STUDENT'
-          experience_level?: 'NOUVEAU' | 'VETERANT'
-          hire_date?: string | null
-          weekly_hours?: number
-          hourly_rate?: number | null
-          color?: string | null
-          is_student?: boolean
-          is_archived?: boolean
           site_id?: string | null
-          created_at?: string
           updated_at?: string
-        }
-      }
-      shifts: {
-        Row: {
-          id: string
-          site_id: string
-          date: string
-          start_time: string
-          end_time: string
-          title: string | null
-          color: string | null
-          required_skills: Json | null
-          max_employees: number
-          status: 'DRAFT' | 'PUBLISHED' | 'LOCKED' | 'CLOSED'
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          site_id: string
-          date: string
-          start_time: string
-          end_time: string
-          title?: string | null
-          color?: string | null
-          required_skills?: Json | null
-          max_employees?: number
-          status?: 'DRAFT' | 'PUBLISHED' | 'LOCKED' | 'CLOSED'
-          created_at?: string
-          updated_at?: string
+          weekly_hours?: number | null
         }
         Update: {
-          id?: string
-          site_id?: string
-          date?: string
-          start_time?: string
-          end_time?: string
-          title?: string | null
           color?: string | null
-          required_skills?: Json | null
-          max_employees?: number
-          status?: 'DRAFT' | 'PUBLISHED' | 'LOCKED' | 'CLOSED'
+          contract_type?: Database["public"]["Enums"]["contract_type"] | null
           created_at?: string
+          email?: string | null
+          employee_number?: string | null
+          experience_level?: Database["public"]["Enums"]["experience_level"] | null
+          first_name?: string
+          hire_date?: string | null
+          hourly_rate?: number | null
+          id?: string
+          is_archived?: boolean | null
+          is_student?: boolean | null
+          last_name?: string
+          phone?: string | null
+          profile_id?: string | null
+          site_id?: string | null
           updated_at?: string
+          weekly_hours?: number | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "employees_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
-      shift_assignments: {
+      invitations: {
         Row: {
-          id: string
-          shift_id: string
-          employee_id: string
-          status: 'PROPOSED' | 'CONFIRMED' | 'CANCELLED'
           created_at: string
-          updated_at: string
+          created_by: string | null
+          email: string
+          expires_at: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          token: string
         }
         Insert: {
-          id?: string
-          shift_id: string
-          employee_id: string
-          status?: 'PROPOSED' | 'CONFIRMED' | 'CANCELLED'
           created_at?: string
-          updated_at?: string
+          created_by?: string | null
+          email: string
+          expires_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["user_role"]
+          token?: string
         }
         Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          expires_at?: string
           id?: string
-          shift_id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_requests: {
+        Row: {
+          created_at: string
+          employee_id: string
+          end_date: string
+          id: string
+          reason: string | null
+          start_date: string
+          status: Database["public"]["Enums"]["leave_status"] | null
+          type: Database["public"]["Enums"]["leave_type"] | null
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          end_date: string
+          id?: string
+          reason?: string | null
+          start_date: string
+          status?: Database["public"]["Enums"]["leave_status"] | null
+          type?: Database["public"]["Enums"]["leave_type"] | null
+        }
+        Update: {
+          created_at?: string
           employee_id?: string
-          status?: 'PROPOSED' | 'CONFIRMED' | 'CANCELLED'
-          created_at?: string
-          updated_at?: string
+          end_date?: string
+          id?: string
+          reason?: string | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["leave_status"] | null
+          type?: Database["public"]["Enums"]["leave_type"] | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "leave_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
-          id: string
-          user_id: string | null
-          title: string
-          message: string
-          type: 'info' | 'success' | 'warning' | 'error'
-          read: boolean
           created_at: string
+          id: string
+          message: string
+          read: boolean | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"] | null
+          user_id: string | null
         }
         Insert: {
-          id?: string
-          user_id?: string | null
-          title: string
-          message: string
-          type?: 'info' | 'success' | 'warning' | 'error'
-          read?: boolean
           created_at?: string
+          id?: string
+          message: string
+          read?: boolean | null
+          title: string
+          type?: Database["public"]["Enums"]["notification_type"] | null
+          user_id?: string | null
         }
         Update: {
-          id?: string
-          user_id?: string | null
-          title?: string
-          message?: string
-          type?: 'info' | 'success' | 'warning' | 'error'
-          read?: boolean
           created_at?: string
+          id?: string
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"] | null
+          user_id?: string | null
         }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shift_assignments: {
+        Row: {
+          created_at: string
+          employee_id: string | null
+          id: string
+          shift_id: string | null
+          status: Database["public"]["Enums"]["assignment_status"] | null
+        }
+        Insert: {
+          created_at?: string
+          employee_id?: string | null
+          id?: string
+          shift_id?: string | null
+          status?: Database["public"]["Enums"]["assignment_status"] | null
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string | null
+          id?: string
+          shift_id?: string | null
+          status?: Database["public"]["Enums"]["assignment_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_assignments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_assignments_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "shifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shifts: {
+        Row: {
+          color: string | null
+          created_at: string
+          date: string
+          end_time: string
+          id: string
+          max_employees: number
+          notes: string | null
+          site_id: string | null
+          start_time: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          date: string
+          end_time: string
+          id?: string
+          max_employees?: number
+          notes?: string | null
+          site_id?: string | null
+          start_time: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          date?: string
+          end_time?: string
+          id?: string
+          max_employees?: number
+          notes?: string | null
+          site_id?: string | null
+          start_time?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shifts_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sites: {
+        Row: {
+          address: string | null
+          capacity: number | null
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          name: string
+          opening_hours: Json | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          capacity?: number | null
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          opening_hours?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          capacity?: number | null
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          opening_hours?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_invitation: {
+        Args: {
+          invitation_token: string
+        }
+        Returns: void
+      }
+      get_my_role: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
     }
     Enums: {
-      assignment_status: 'PROPOSED' | 'CONFIRMED' | 'CANCELLED'
-      shift_status: 'DRAFT' | 'PUBLISHED' | 'LOCKED' | 'CLOSED'
-      notification_type: 'info' | 'success' | 'warning' | 'error'
+      assignment_status: "PROPOSED" | "CONFIRMED" | "DECLINED"
+      contract_type: "CDI" | "CDD" | "INTERIM" | "STAGE" | "APPRENTISSAGE" | "STUDENT"
+      experience_level: "NOUVEAU" | "VETERANT"
+      leave_status: "PENDING" | "APPROVED" | "REJECTED"
+      leave_type: "PAID_LEAVE" | "SICK_LEAVE" | "EXAM" | "OTHER"
+      notification_type: "info" | "success" | "warning" | "error"
+      user_role: "ADMIN" | "SUPER_MANAGER" | "MANAGER" | "EMPLOYEE"
     }
     CompositeTypes: {
       [_ in never]: never
     }
   }
 }
+
+type PublicSchema = Database[Extract<keyof Database, "public">]
+
+export type Tables<
+  PublicTableNameOrOptions extends
+    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
+        PublicSchema["Views"])
+  ? (PublicSchema["Tables"] &
+      PublicSchema["Views"])[PublicTableNameOrOptions] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : never
+
+export type TablesInsert<
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+  ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : never
+
+export type TablesUpdate<
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+  ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : never
+
+export type Enums<
+  PublicEnumNameOrOptions extends
+    | keyof PublicSchema["Enums"]
+    | { schema: keyof Database },
+  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
+  ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+  : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof PublicSchema["CompositeTypes"]
+    | { schema: keyof Database },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
+  ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  : never

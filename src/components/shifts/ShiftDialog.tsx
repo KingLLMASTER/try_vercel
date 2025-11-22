@@ -74,7 +74,7 @@ export function ShiftDialog({ open, onOpenChange, initialDate, initialSiteId, sh
     if (shiftToEdit) {
       form.reset({
         title: shiftToEdit.title || '',
-        site_id: shiftToEdit.site_id,
+        site_id: shiftToEdit.site_id || '',
         date: shiftToEdit.date,
         start_time: shiftToEdit.start_time.slice(0, 5),
         end_time: shiftToEdit.end_time.slice(0, 5),
