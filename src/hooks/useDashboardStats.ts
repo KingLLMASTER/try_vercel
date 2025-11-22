@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/contexts/AuthContext'
 import { addDays, format } from 'date-fns'
 
 export interface DashboardStats {
@@ -11,9 +12,21 @@ export interface DashboardStats {
 }
 
 export function useDashboardStats() {
+  const { organization } = useAuth()
+
   return useQuery({
-    queryKey: ['dashboard-stats'],
+    queryKey: ['dashboard-stats', organization?.id],
     queryFn: async (): Promise<DashboardStats> => {
+      if (!organization?.id) {
+        return {
+          totalEmployees: 0,
+          activeSites: 0,
+          upcomingShiftsCount: 0,
+          unfilledShiftsCount: 0,
+          upcomingShifts: []
+        }
+      }
+
       const today = new Date()
       const nextWeek = addDays(today, 7)
       const todayStr = format(today, 'yyyy-MM-dd')
@@ -64,6 +77,7 @@ export function useDashboardStats() {
         unfilledShiftsCount,
         upcomingShifts: upcomingShifts || []
       }
-    }
+    },
+    enabled: !!organization?.id
   })
 }

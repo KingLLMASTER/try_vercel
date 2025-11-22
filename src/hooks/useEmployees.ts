@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { Database } from '@/integrations/supabase/types'
+import { useAuth } from '@/contexts/AuthContext'
 
 type Employee = Database['public']['Tables']['employees']['Row']
 type EmployeeInsert = Database['public']['Tables']['employees']['Insert']
@@ -9,11 +10,14 @@ type EmployeeUpdate = Database['public']['Tables']['employees']['Update']
 type EmployeeWithSite = Employee & { sites: { name: string } | null }
 
 export function useEmployees() {
+  const { organization } = useAuth()
   const queryClient = useQueryClient()
 
   const { data: employees, isLoading, error } = useQuery({
-    queryKey: ['employees'],
+    queryKey: ['employees', organization?.id],
     queryFn: async () => {
+      if (!organization?.id) return []
+      
       const { data, error } = await supabase
         .from('employees')
         .select('*, sites(name)')
@@ -22,6 +26,7 @@ export function useEmployees() {
       if (error) throw error
       return data as unknown as EmployeeWithSite[]
     },
+    enabled: !!organization?.id
   })
 
   const createEmployee = useMutation({

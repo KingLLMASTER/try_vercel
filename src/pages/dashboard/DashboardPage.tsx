@@ -1,4 +1,5 @@
 import { useDashboardStats } from '@/hooks/useDashboardStats'
+import { useAuth } from '@/contexts/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Users, MapPin, Calendar, AlertCircle, TrendingUp, Clock, CheckCircle2, XCircle } from 'lucide-react'
@@ -8,12 +9,15 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 
 export default function DashboardPage() {
+  const { organization } = useAuth()
   const { data: stats, isLoading } = useDashboardStats()
 
   // Fetch recent leave requests
   const { data: leaveRequests } = useQuery({
-    queryKey: ['recent-leave-requests'],
+    queryKey: ['recent-leave-requests', organization?.id],
     queryFn: async () => {
+      if (!organization?.id) return []
+      
       const { data, error } = await supabase
         .from('leave_requests')
         .select(`
@@ -29,7 +33,8 @@ export default function DashboardPage() {
 
       if (error) throw error
       return data
-    }
+    },
+    enabled: !!organization?.id
   })
 
   if (isLoading) {
